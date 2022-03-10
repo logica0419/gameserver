@@ -31,7 +31,7 @@ def create_user(name: str, leader_card_id: int) -> str:
   token = str(uuid.uuid4())
   # NOTE: tokenが衝突したらリトライする必要がある.
   with engine.begin() as conn:
-    result = conn.execute(
+    conn.execute(
         text(
             "INSERT INTO `user`"
             "(name, token, leader_card_id)"
@@ -39,7 +39,6 @@ def create_user(name: str, leader_card_id: int) -> str:
         ),
         {"name": name, "token": token, "leader_card_id": leader_card_id}
     )
-    # print(result)
   return token
 
 
