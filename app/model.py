@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.exc import NoResultFound
 
+from app.api import LiveDifficulty, WaitRoomStatus
 from .db import engine
 
 
@@ -71,3 +72,22 @@ def update_user(token: str, name: str, leader_card_id: int) -> None:
         ),
         {"name": name, "leader_card_id": leader_card_id, "token": token}
     )
+
+
+class Room(BaseModel):
+  id: int
+  live_id: int
+  owner_id: int
+  wait_room_status: WaitRoomStatus
+
+  class Config:
+    orm_mode = True
+
+
+class RoomMember(BaseModel):
+  room_id: int
+  member_id: int
+  live_difficulty: LiveDifficulty
+
+  class Config:
+    orm_mode = True
