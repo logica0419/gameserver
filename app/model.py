@@ -203,15 +203,19 @@ def create_room(
 def _get_rooms_by_live_id(conn, live_id: int) -> list[Room]:
   if live_id == 0:
     result = conn.execute(
-        text("SELECT * FROM room"),
+        text(
+            "SELECT * FROM room "
+            "WHERE wait_room_status = :waiting"
+        ),
+        {"waiting": WaitRoomStatus.Waiting.value}
     )
   else:
     result = conn.execute(
         text(
             "SELECT * FROM room "
-            "WHERE live_id = :live_id"
+            "WHERE live_id = :live_id AND wait_room_status = :waiting"
         ),
-        {"live_id": live_id}
+        {"live_id": live_id, "waiting": WaitRoomStatus.Waiting.value}
     )
 
   rooms = list[Room]()
@@ -272,7 +276,7 @@ def add_member(
     room = _get_room_by_id(conn, room_id)
     if room is None:
       return JoinRoomResult.OtherError
-    if room.wait_room_status == WaitRoomStatus.Dissolution:
+    if room.wait_room_status != WaitRoomStatus.Waiting:
       return JoinRoomResult.Disbanded
     if room.owner_id == member_id:
       return JoinRoomResult.OtherError
