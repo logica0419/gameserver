@@ -226,3 +226,38 @@ def get_rooms_by_live_id(live_id: int) -> list[RoomInfo]:
           )
       )
   return roomInfos
+
+
+def _get_room_by_id(conn, room_id: int) -> Optional[Room]:
+  result = conn.execute(
+      text(
+          "SELECT * FROM room "
+          "WHERE id=:id"
+      ),
+      {"id": room_id}
+  )
+  try:
+    room = result.one()
+  except NoResultFound:
+    return None
+  return Room.from_orm(room)
+
+
+def add_member(
+        room_id,
+        member_id,
+        select_difficulty: LiveDifficulty
+) -> JoinRoomResult:
+  with engine.begin() as conn:
+    room = _get_room_by_id(conn, room_id)
+    if room is None:
+      return JoinRoomResult.OtherError
+    if room.wait_room_status == WaitRoomStatus.Dissolution:
+      return JoinRoomResult.Disbanded
+
+    membersCount = _get_room_members_count_by_room_id(conn, room_id)
+    if membersCount >= MAX_USER_COUNT:
+      return JoinRoomResult.RoomFull
+
+    _create_member(conn, room_id, member_id, select_difficulty)
+  return JoinRoomResult.OK
