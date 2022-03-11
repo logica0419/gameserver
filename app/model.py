@@ -353,3 +353,42 @@ def start_room(user_id: int, room_id: int):
       raise HTTPException(status_code=403, detail="you are not the owner")
 
     _update_room_status(conn, room_id, WaitRoomStatus.LiveStart)
+
+
+def _update_result(
+        conn,
+        user_id: int,
+        room_id: int,
+        judge_count_list: list[int],
+        score: int
+):
+  judgeCountListStr = ",".join(map(str, judge_count_list))
+
+  conn.execute(
+      text(
+          "UPDATE room_member "
+          "SET judge_count_list = :judge_count_list, score = :score "
+          "WHERE room_id = :room_id AND member_id = :member_id"
+      ),
+      {
+          "judge_count_list": judgeCountListStr,
+          "score": score,
+          "room_id": room_id,
+          "member_id": user_id
+      }
+  )
+
+
+def finish_game(
+    user_id: int,
+    room_id: int,
+    judge_count_list: list[int],
+    score: int
+):
+  with engine.begin() as conn:
+    room = _get_room_by_id(conn, room_id)
+    if room.wait_room_status == WaitRoomStatus.Waiting:
+      raise HTTPException(status_code=400, detail="room is not started")
+
+    _update_room_status(conn, room_id, WaitRoomStatus.Dissolution)
+    _update_result(conn, user_id, room_id, judge_count_list, score)

@@ -166,3 +166,19 @@ def room_start(req: RoomStartRequest, token: str = Depends(get_auth_token)):
 
   model.start_room(user.id, req.room_id)
   return Empty()
+
+
+class RoomEndRequest(BaseModel):
+  room_id: int
+  judge_count_list: list[int]
+  score: int
+
+
+@app.post("/room/end", response_model=Empty)
+def room_end(req: RoomEndRequest, token: str = Depends(get_auth_token)):
+  user = model.get_user_by_token(token)
+  if user is None:
+    raise HTTPException(status_code=401)
+
+  model.finish_game(user.id, req.room_id, req.judge_count_list, req.score)
+  return Empty()
