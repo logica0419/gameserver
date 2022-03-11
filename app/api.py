@@ -52,7 +52,6 @@ def user_me(token: str = Depends(get_auth_token)):
   user = model.get_user_by_token(token)
   if user is None:
     raise HTTPException(status_code=404)
-  # print(f"user_me({token=}, {user=})")
   return user
 
 
@@ -62,8 +61,11 @@ class Empty(BaseModel):
 
 @app.post("/user/update", response_model=Empty)
 def update(req: UserCreateRequest, token: str = Depends(get_auth_token)):
-  """Update user attributes"""
-  # print(req)
+  """ユーザー情報更新"""
+  user = model.get_user_by_token(token)
+  if user is None:
+    raise HTTPException(status_code=401)
+
   model.update_user(token, req.user_name, req.leader_card_id)
   return Empty()
 
