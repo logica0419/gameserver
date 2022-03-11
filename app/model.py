@@ -55,6 +55,21 @@ def _get_user_by_token(conn, token: str) -> Optional[SafeUser]:
   return SafeUser.from_orm(row)
 
 
+def _get_user_by_id(conn, id: int) -> Optional[SafeUser]:
+  result = conn.execute(
+      text(
+          "SELECT id, name, leader_card_id FROM user "
+          "WHERE id=:id"
+      ),
+      {"id": id}
+  )
+  try:
+    user = result.one()
+  except NoResultFound:
+    return None
+  return SafeUser.from_orm(user)
+
+
 def get_user_by_token(token: str) -> Optional[SafeUser]:
   with engine.begin() as conn:
     return _get_user_by_token(conn, token)
@@ -106,6 +121,11 @@ class RoomUser(BaseModel):
   select_difficulty: LiveDifficulty
   is_me: bool
   is_host: bool
+
+
+class RoomStatus(BaseModel):
+  status: WaitRoomStatus
+  room_user_list: list[RoomUser]
 
 
 class ResultUser(BaseModel):
@@ -263,3 +283,45 @@ def add_member(
 
     _create_member(conn, room_id, member_id, select_difficulty)
   return JoinRoomResult.OK
+
+
+def _get_members_by_room_id(conn, room_id: int) -> list[RoomMember]:
+  result = conn.execute(
+      text(
+          "SELECT * FROM room_member "
+          "WHERE room_id = :room_id"
+      ),
+      {"room_id": room_id}
+  )
+
+  members = list[RoomMember]()
+  for row in result:
+    members.append(RoomMember.from_orm(row))
+  return members
+
+
+def get_room_status(user_id: int, room_id: int) -> Optional[RoomStatus]:
+  with engine.begin() as conn:
+    room = _get_room_by_id(conn, room_id)
+    if room is None:
+      return None
+
+    userList = list[RoomUser]()
+    members = _get_members_by_room_id(conn, room_id)
+    for member in members:
+      userInfo = _get_user_by_id(conn, member.member_id)
+      if userInfo is None:
+        return None
+
+      userList.append(
+          RoomUser(
+              user_id=member.member_id,
+              name=userInfo.name,
+              leader_card_id=userInfo.leader_card_id,
+              select_difficulty=member.live_difficulty,
+              is_me=member.member_id == user_id,
+              is_host=member.member_id == room.owner_id
+          )
+      )
+
+  return RoomStatus(status=room.wait_room_status, room_user_list=userList)
