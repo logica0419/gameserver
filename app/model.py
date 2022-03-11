@@ -148,6 +148,8 @@ class RoomMember(BaseModel):
   room_id: int
   member_id: int
   live_difficulty: LiveDifficulty
+  judge_count_list: Optional[list[int]]
+  score: Optional[int]
 
   class Config:
     orm_mode = True
