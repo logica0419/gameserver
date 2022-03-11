@@ -148,7 +148,7 @@ class RoomMember(BaseModel):
   room_id: int
   member_id: int
   live_difficulty: LiveDifficulty
-  judge_count_list: Optional[list[int]]
+  judge_count_list: Optional[str]
   score: Optional[int]
 
   class Config:
@@ -387,6 +387,8 @@ def finish_game(
 ):
   with engine.begin() as conn:
     room = _get_room_by_id(conn, room_id)
+    if room is None:
+      raise HTTPException(status_code=404)
     if room.wait_room_status == WaitRoomStatus.Waiting:
       raise HTTPException(status_code=400, detail="room is not started")
 
