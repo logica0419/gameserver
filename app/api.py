@@ -152,3 +152,17 @@ def room_wait(req: RoomWaitRequest, token: str = Depends(get_auth_token)):
   if roomStatus is None:
     raise HTTPException(status_code=404)
   return roomStatus
+
+
+class RoomStartRequest(BaseModel):
+  room_id: int
+
+
+@app.post("/room/start", response_model=Empty)
+def room_start(req: RoomStartRequest, token: str = Depends(get_auth_token)):
+  user = model.get_user_by_token(token)
+  if user is None:
+    raise HTTPException(status_code=401)
+
+  model.start_room(user.id, req.room_id)
+  return Empty()

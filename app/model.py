@@ -1,7 +1,7 @@
 import uuid
 from enum import IntEnum
 from typing import Optional
-
+from fastapi import HTTPException
 from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.exc import NoResultFound
@@ -325,3 +325,25 @@ def get_room_status(user_id: int, room_id: int) -> Optional[RoomStatus]:
       )
 
   return RoomStatus(status=room.wait_room_status, room_user_list=userList)
+
+
+def _update_room_status(conn, room_id: int, status: WaitRoomStatus):
+  conn.execute(
+      text(
+          "UPDATE room "
+          "SET wait_room_status = :status "
+          "WHERE id = :id"
+      ),
+      {"id": room_id, "status": status.value}
+  )
+
+
+def start_room(user_id: int, room_id: int):
+  with engine.begin() as conn:
+    room = _get_room_by_id(conn, room_id)
+    if room is None:
+      raise HTTPException(status_code=404)
+    if room.owner_id != user_id:
+      raise HTTPException(status_code=403, detail="you are not the owner")
+
+    _update_room_status(conn, room_id, WaitRoomStatus.LiveStart)
