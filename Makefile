@@ -7,3 +7,6 @@ format:
 
 test:
 	pytest -sv tests
+
+recreate:
+	mysql webapp < schema.sql
