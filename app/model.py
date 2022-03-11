@@ -72,6 +72,9 @@ def update_user(token: str, name: str, leader_card_id: int) -> None:
     )
 
 
+MAX_USER_COUNT = 4
+
+
 class LiveDifficulty(IntEnum):
   normal = 1
   hard = 2
@@ -176,3 +179,51 @@ def create_room(
     room_id = _create_room(conn, owner_id, live_id)
     _create_member(conn, room_id, owner_id, select_difficulty)
   return room_id
+
+
+def _get_rooms_by_live_id(conn, live_id: int) -> list[Room]:
+  if live_id == 0:
+    result = conn.execute(
+        text("SELECT * FROM room"),
+    )
+  else:
+    result = conn.execute(
+        text(
+            "SELECT * FROM room "
+            "WHERE live_id=:live_id"
+        ),
+        {"live_id": live_id}
+    )
+
+  rooms = list[Room]()
+  for row in result:
+    rooms.append(Room.from_orm(row))
+  return rooms
+
+
+def _get_room_members_count_by_room_id(conn, room_id: int) -> int:
+  result = conn.execute(
+      text(
+          "SELECT COUNT(*) FROM room_member "
+          "WHERE room_id=:room_id"
+      ),
+      {"room_id": room_id}
+  )
+  return result.scalar()
+
+
+def get_rooms_by_live_id(live_id: int) -> list[RoomInfo]:
+  roomInfos = list[RoomInfo]()
+  with engine.begin() as conn:
+    rooms = _get_rooms_by_live_id(conn, live_id)
+    for room in rooms:
+      memberCount = _get_room_members_count_by_room_id(conn, room.id)
+      roomInfos.append(
+          RoomInfo(
+              room_id=room.id,
+              live_id=room.live_id,
+              joined_user_count=memberCount,
+              max_user_count=MAX_USER_COUNT
+          )
+      )
+  return roomInfos
