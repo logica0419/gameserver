@@ -44,7 +44,7 @@ def _get_user_by_token(conn, token: str) -> Optional[SafeUser]:
   result = conn.execute(
       text(
           "SELECT id, name, leader_card_id FROM user "
-          "WHERE token=:token"
+          "WHERE token = :token"
       ),
       {"token": token}
   )
@@ -59,7 +59,7 @@ def _get_user_by_id(conn, id: int) -> Optional[SafeUser]:
   result = conn.execute(
       text(
           "SELECT id, name, leader_card_id FROM user "
-          "WHERE id=:id"
+          "WHERE id = :id"
       ),
       {"id": id}
   )
@@ -79,8 +79,8 @@ def update_user(token: str, name: str, leader_card_id: int) -> None:
   with engine.begin() as conn:
     conn.execute(
         text(
-            "UPDATE user SET name=:name, leader_card_id=:leader_card_id "
-            "WHERE token=:token"
+            "UPDATE user SET name=:name, leader_card_id = :leader_card_id "
+            "WHERE token = :token"
         ),
         {"name": name, "leader_card_id": leader_card_id, "token": token}
     )
@@ -209,7 +209,7 @@ def _get_rooms_by_live_id(conn, live_id: int) -> list[Room]:
     result = conn.execute(
         text(
             "SELECT * FROM room "
-            "WHERE live_id=:live_id"
+            "WHERE live_id = :live_id"
         ),
         {"live_id": live_id}
     )
@@ -224,7 +224,7 @@ def _get_room_members_count_by_room_id(conn, room_id: int) -> int:
   result = conn.execute(
       text(
           "SELECT COUNT(*) FROM room_member "
-          "WHERE room_id=:room_id"
+          "WHERE room_id = :room_id"
       ),
       {"room_id": room_id}
   )
@@ -252,7 +252,7 @@ def _get_room_by_id(conn, room_id: int) -> Optional[Room]:
   result = conn.execute(
       text(
           "SELECT * FROM room "
-          "WHERE id=:id"
+          "WHERE id = :id"
       ),
       {"id": room_id}
   )
