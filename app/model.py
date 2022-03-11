@@ -1,14 +1,12 @@
 import json
 import uuid
-from enum import Enum, IntEnum
+from enum import IntEnum
 from typing import Optional
 
-from fastapi import HTTPException
 from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.exc import NoResultFound
 
-from app.api import LiveDifficulty, WaitRoomStatus
 from .db import engine
 
 
@@ -34,7 +32,7 @@ def create_user(name: str, leader_card_id: int) -> str:
   with engine.begin() as conn:
     conn.execute(
         text(
-            "INSERT INTO `user` "
+            "INSERT INTO user "
             "(name, token, leader_card_id) "
             "VALUES (:name, :token, :leader_card_id)"
         ),
@@ -46,7 +44,7 @@ def create_user(name: str, leader_card_id: int) -> str:
 def _get_user_by_token(conn, token: str) -> Optional[SafeUser]:
   result = conn.execute(
       text(
-          "SELECT `id`, `name`, `leader_card_id` FROM `user` "
+          "SELECT id, name, leader_card_id FROM user "
           "WHERE token=:token"
       ),
       {"token": token}
@@ -67,11 +65,51 @@ def update_user(token: str, name: str, leader_card_id: int) -> None:
   with engine.begin() as conn:
     conn.execute(
         text(
-            "UPDATE `user` SET name=:name, leader_card_id=:leader_card_id "
+            "UPDATE user SET name=:name, leader_card_id=:leader_card_id "
             "WHERE token=:token"
         ),
         {"name": name, "leader_card_id": leader_card_id, "token": token}
     )
+
+
+class LiveDifficulty(IntEnum):
+  normal = 1
+  hard = 2
+
+
+class JoinRoomResult(IntEnum):
+  OK = 1
+  RoomFull = 2
+  Disbanded = 3
+  OtherError = 4
+
+
+class WaitRoomStatus(IntEnum):
+  Waiting = 1
+  LiveStart = 2
+  Dissolution = 3
+
+
+class RoomInfo(BaseModel):
+  room_id: int
+  live_id: int
+  joined_user_count: int
+  max_user_count: int
+
+
+class RoomUser(BaseModel):
+  user_id: int
+  name: str
+  leader_card_id: int
+  select_difficulty: LiveDifficulty
+  is_me: bool
+  is_host: bool
+
+
+class ResultUser(BaseModel):
+  user_id: int
+  judge_count_list: list[int]
+  score: int
 
 
 class Room(BaseModel):
