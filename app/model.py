@@ -129,3 +129,50 @@ class RoomMember(BaseModel):
 
   class Config:
     orm_mode = True
+
+
+def _create_room(conn, owner_id: int, live_id: int,) -> int:
+  result = conn.execute(
+      text(
+          "INSERT INTO room "
+          "(live_id, owner_id, wait_room_status) "
+          "VALUES (:live_id, :owner_id, :wait_room_status)"
+      ),
+      {
+          "live_id": live_id,
+          "owner_id": owner_id,
+          "wait_room_status": WaitRoomStatus.Waiting.value
+      }
+  )
+  return result.lastrowid
+
+
+def _create_member(
+    conn,
+    room_id: int,
+    member_id: int,
+    select_difficulty: LiveDifficulty
+):
+  conn.execute(
+      text(
+          "INSERT INTO room_member "
+          "(room_id, member_id, live_difficulty) "
+          "VALUES (:room_id, :member_id, :live_difficulty)"
+      ),
+      {
+          "room_id": room_id,
+          "member_id": member_id,
+          "live_difficulty": select_difficulty.value
+      }
+  )
+
+
+def create_room(
+        owner_id: int,
+        live_id: int,
+        select_difficulty: LiveDifficulty
+) -> int:
+  with engine.begin() as conn:
+    room_id = _create_room(conn, owner_id, live_id)
+    _create_member(conn, room_id, owner_id, select_difficulty)
+  return room_id

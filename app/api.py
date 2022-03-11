@@ -69,3 +69,23 @@ def update(req: UserCreateRequest, token: str = Depends(get_auth_token)):
 
 
 # Room APIs
+
+
+class RoomCreateRequest(BaseModel):
+  live_id: int
+  select_difficulty: LiveDifficulty
+
+
+class RoomCreateResponse(BaseModel):
+  room_id: int
+
+
+@app.post("/room/create", response_model=RoomCreateResponse)
+def room_create(req: RoomCreateRequest, token: str = Depends(get_auth_token)):
+  """新規ルーム作成"""
+  user = model.get_user_by_token(token)
+  if user is None:
+    raise HTTPException(status_code=401)
+
+  room_id = model.create_room(user.id, req.live_id, req.select_difficulty)
+  return RoomCreateResponse(room_id=room_id)
