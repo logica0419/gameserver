@@ -254,6 +254,8 @@ def add_member(
       return JoinRoomResult.OtherError
     if room.wait_room_status == WaitRoomStatus.Dissolution:
       return JoinRoomResult.Disbanded
+    if room.owner_id == member_id:
+      return JoinRoomResult.OtherError
 
     membersCount = _get_room_members_count_by_room_id(conn, room_id)
     if membersCount >= MAX_USER_COUNT:
