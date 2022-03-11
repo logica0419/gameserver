@@ -394,3 +394,37 @@ def finish_game(
 
     _update_room_status(conn, room_id, WaitRoomStatus.Dissolution)
     _update_result(conn, user_id, room_id, judge_count_list, score)
+
+
+def _get_results_by_room_id(conn, room_id: int) -> list[ResultUser]:
+  result = conn.execute(
+      text(
+          "SELECT * FROM room_member "
+          "WHERE room_id = :room_id "
+          "AND judge_count_list IS NOT NULL AND score IS NOT NULL"
+      ),
+      {"room_id": room_id}
+  )
+
+  members = list[ResultUser]()
+  for row in result:
+    member = RoomMember.from_orm(row)
+    judgeCountStrList = member.judge_count_list.split(",")
+    judgeCountList = [int(s) for s in judgeCountStrList]
+    members.append(ResultUser(
+        user_id=member.member_id,
+        judge_count_list=judgeCountList,
+        score=member.score
+    ))
+  return members
+
+
+def get_results_by_room_id(room_id: int) -> list[ResultUser]:
+  with engine.begin() as conn:
+    room = _get_room_by_id(conn, room_id)
+    if room is None:
+      raise HTTPException(status_code=404)
+    if room.wait_room_status != WaitRoomStatus.Dissolution:
+      raise HTTPException(status_code=400, detail="room is not ended")
+
+    return _get_results_by_room_id(conn, room_id)

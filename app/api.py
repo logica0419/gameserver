@@ -6,6 +6,7 @@ from . import model
 from .model import (
     JoinRoomResult,
     LiveDifficulty,
+    ResultUser,
     RoomInfo,
     RoomStatus,
     SafeUser
@@ -182,3 +183,21 @@ def room_end(req: RoomEndRequest, token: str = Depends(get_auth_token)):
 
   model.finish_game(user.id, req.room_id, req.judge_count_list, req.score)
   return Empty()
+
+
+class RoomResultRequest(BaseModel):
+  room_id: int
+
+
+class RoomResultResponse(BaseModel):
+  result_user_list: list[ResultUser]
+
+
+@app.post("/room/result", response_model=RoomResultResponse)
+def room_result(req: RoomResultRequest, token: str = Depends(get_auth_token)):
+  user = model.get_user_by_token(token)
+  if user is None:
+    raise HTTPException(status_code=401)
+
+  resultList = model.get_results_by_room_id(req.room_id)
+  return RoomResultResponse(result_user_list=resultList)
