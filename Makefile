@@ -6,7 +6,7 @@ format:
 	black app tests
 
 test:
-	pytest -sv tests
+	pytest -sv tests/*
 
 recreate:
 	mysql webapp < schema.sql
