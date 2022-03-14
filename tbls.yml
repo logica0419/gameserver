@@ -1,0 +1,8 @@
+# .tbls.yml
+
+# DSN (Database Source Name) to connect database
+dsn: mysql://webapp:webapp_no_password@127.0.0.1/webapp
+
+# Path to generate document
+# Default is `dbdoc`
+docPath: ./docs/db_schema

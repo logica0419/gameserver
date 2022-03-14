@@ -10,3 +10,6 @@ test:
 
 recreate:
 	mysql webapp < schema.sql
+
+tbls:
+	tbls doc
