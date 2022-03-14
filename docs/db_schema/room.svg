@@ -47,7 +47,7 @@
 <text text-anchor="start" x="327.899" y="-113.9" font-family="Arial" font-size="14.00" fill="#666666">[varchar(255)]</text>
 <polygon fill="none" stroke="#000000" points="282,-72.5 282,-102.5 428,-102.5 428,-72.5 282,-72.5"/>
 <text text-anchor="start" x="289" y="-83.9" font-family="Arial" font-size="14.00" fill="#000000">token </text>
-<text text-anchor="start" x="327.129" y="-83.9" font-family="Arial" font-size="14.00" fill="#666666">[varchar(255)]</text>
+<text text-anchor="start" x="327.129" y="-83.9" font-family="Arial" font-size="14.00" fill="#666666">[char(36)]</text>
 <polygon fill="none" stroke="#000000" points="282,-42.5 282,-72.5 428,-72.5 428,-42.5 282,-42.5"/>
 <text text-anchor="start" x="289" y="-53.9" font-family="Arial" font-size="14.00" fill="#000000">leader_card_id </text>
 <text text-anchor="start" x="385.4684" y="-53.9" font-family="Arial" font-size="14.00" fill="#666666">[int]</text>
@@ -78,7 +78,7 @@
 <text text-anchor="start" x="331.2258" y="-673.9" font-family="Arial" font-size="14.00" fill="#666666">[tinyint]</text>
 <polygon fill="none" stroke="#000000" points="241,-632.5 241,-662.5 469,-662.5 469,-632.5 241,-632.5"/>
 <text text-anchor="start" x="248" y="-643.9" font-family="Arial" font-size="14.00" fill="#000000">judge_count_list </text>
-<text text-anchor="start" x="353.035" y="-643.9" font-family="Arial" font-size="14.00" fill="#666666">[varchar(50)]</text>
+<text text-anchor="start" x="353.035" y="-643.9" font-family="Arial" font-size="14.00" fill="#666666">[varchar(20)]</text>
 <polygon fill="none" stroke="#000000" points="241,-602.5 241,-632.5 469,-632.5 469,-602.5 241,-602.5"/>
 <text text-anchor="start" x="248" y="-613.9" font-family="Arial" font-size="14.00" fill="#000000">score </text>
 <text text-anchor="start" x="286.1164" y="-613.9" font-family="Arial" font-size="14.00" fill="#666666">[int]</text>

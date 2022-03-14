@@ -10,7 +10,7 @@ CREATE TABLE `room_member` (
   `room_id` bigint NOT NULL,
   `member_id` bigint NOT NULL,
   `live_difficulty` tinyint NOT NULL,
-  `judge_count_list` varchar(50) DEFAULT NULL,
+  `judge_count_list` varchar(20) DEFAULT NULL,
   `score` int DEFAULT NULL,
   PRIMARY KEY (`room_id`,`member_id`),
   KEY `member_id` (`member_id`),
@@ -28,7 +28,7 @@ CREATE TABLE `room_member` (
 | room_id | bigint |  | false |  | [room](room.md) |  |
 | member_id | bigint |  | false |  | [user](user.md) |  |
 | live_difficulty | tinyint |  | false |  |  |  |
-| judge_count_list | varchar(50) |  | true |  |  |  |
+| judge_count_list | varchar(20) |  | true |  |  |  |
 | score | int |  | true |  |  |  |
 
 ## Constraints

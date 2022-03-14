@@ -9,7 +9,7 @@
 CREATE TABLE `user` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
-  `token` varchar(255) NOT NULL,
+  `token` char(36) NOT NULL,
   `leader_card_id` int NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `token` (`token`)
@@ -24,7 +24,7 @@ CREATE TABLE `user` (
 | ---- | ---- | ------- | -------- | ---------------- | -------- | ------- | ------- |
 | id | bigint |  | false | auto_increment | [room](room.md) [room_member](room_member.md) |  |  |
 | name | varchar(255) |  | false |  |  |  |  |
-| token | varchar(255) |  | false |  |  |  |  |
+| token | char(36) |  | false |  |  |  |  |
 | leader_card_id | int |  | false |  |  |  |  |
 
 ## Constraints
