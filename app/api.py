@@ -36,7 +36,6 @@ class UserCreateResponse(BaseModel):
 
 @app.post("/user/create", response_model=UserCreateResponse)
 def user_create(req: UserCreateRequest):
-  """新規ユーザー作成"""
   token = model.create_user(req.user_name, req.leader_card_id)
   return UserCreateResponse(user_token=token)
 
@@ -66,7 +65,6 @@ class Empty(BaseModel):
 
 @app.post("/user/update", response_model=Empty)
 def update(req: UserCreateRequest, token: str = Depends(get_auth_token)):
-  """ユーザー情報更新"""
   user = model.get_user_by_token(token)
   if user is None:
     raise HTTPException(status_code=401)
@@ -89,7 +87,6 @@ class RoomCreateResponse(BaseModel):
 
 @app.post("/room/create", response_model=RoomCreateResponse)
 def room_create(req: RoomCreateRequest, token: str = Depends(get_auth_token)):
-  """新規ルーム作成"""
   user = model.get_user_by_token(token)
   if user is None:
     raise HTTPException(status_code=401)
@@ -107,11 +104,7 @@ class RoomListResponse(BaseModel):
 
 
 @app.post("/room/list", response_model=RoomListResponse)
-def room_list(req: RoomListRequest, token: str = Depends(get_auth_token)):
-  user = model.get_user_by_token(token)
-  if user is None:
-    raise HTTPException(status_code=401)
-
+def room_list(req: RoomListRequest):
   room_info_list = model.get_rooms(req.live_id)
   return RoomListResponse(room_info_list=room_info_list)
 
@@ -194,11 +187,7 @@ class RoomResultResponse(BaseModel):
 
 
 @app.post("/room/result", response_model=RoomResultResponse)
-def room_result(req: RoomResultRequest, token: str = Depends(get_auth_token)):
-  user = model.get_user_by_token(token)
-  if user is None:
-    raise HTTPException(status_code=401)
-
+def room_result(req: RoomResultRequest):
   resultList = model.get_results(req.room_id)
   return RoomResultResponse(result_user_list=resultList)
 
