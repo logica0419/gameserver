@@ -442,3 +442,50 @@ def get_results(room_id: int) -> list[ResultUser]:
       raise HTTPException(status_code=400, detail="room is not ended")
 
     return _get_results_by_room_id(conn, room_id)
+
+
+def _delete_member(conn, room_id: int, member_id: int):
+  conn.execute(
+      text(
+          "DELETE FROM room_member "
+          "WHERE room_id = :room_id AND member_id = :member_id"
+      ),
+      {"room_id": room_id, "member_id": member_id}
+  )
+
+
+def _update_room_owner(conn, id: int, owner_id: int):
+  conn.execute(
+      text(
+          "UPDATE room "
+          "SET owner_id = :owner_id"
+          "WHERE id = :id"
+      ),
+      {"id": id, "owner_id": owner_id}
+  )
+
+
+def delete_member(room_id: int, member_id: int):
+  with engine.begin() as conn:
+    room = _get_room_by_id(conn, room_id)
+    if room is None:
+      raise HTTPException(status_code=404)
+    if room.wait_room_status != WaitRoomStatus.Waiting:
+      raise HTTPException(status_code=400, detail="room is already started")
+
+    members = _get_members_by_room_id(conn, room_id)
+    if all(member.member_id != member_id for member in members):
+      raise HTTPException(
+          status_code=404,
+          detail="member is not found in the room"
+      )
+
+    _delete_member(conn, room_id, member_id)
+    if len(members) == 1:
+      _update_room_status(conn, room_id, WaitRoomStatus.Dissolution)
+      return
+    if room.owner_id == member_id:
+      for member in members:
+        if member.member_id != member_id:
+          _update_room_owner(conn, room_id, member.member_id)
+          break

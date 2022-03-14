@@ -201,3 +201,17 @@ def room_result(req: RoomResultRequest, token: str = Depends(get_auth_token)):
 
   resultList = model.get_results(req.room_id)
   return RoomResultResponse(result_user_list=resultList)
+
+
+class RoomLeaveRequest(BaseModel):
+  room_id: int
+
+
+@app.post("/room/leave", response_model=Empty)
+def room_leave(req: RoomLeaveRequest, token: str = Depends(get_auth_token)):
+  user = model.get_user_by_token(token)
+  if user is None:
+    raise HTTPException(status_code=401)
+
+  model.delete_member(req.room_id, user.id)
+  return Empty()
