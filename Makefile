@@ -12,4 +12,5 @@ recreate:
 	mysql webapp < schema.sql
 
 tbls:
+	rm -r ./docs/db_schema
 	tbls doc
