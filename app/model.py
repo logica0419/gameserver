@@ -481,7 +481,7 @@ def delete_member(room_id: int, member_id: int):
       )
 
     _delete_member(conn, room_id, member_id)
-    if len(members) == 1:
+    if len(members) <= 1:
       _update_room_status(conn, room_id, WaitRoomStatus.Dissolution)
       return
     if room.owner_id == member_id:
