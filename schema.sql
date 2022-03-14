@@ -19,7 +19,8 @@ CREATE TABLE `room` (
   `owner_id` bigint NOT NULL,
   `wait_room_status` tinyint NOT NULL,
   PRIMARY KEY (`id`),
-  FOREIGN KEY (`owner_id`) REFERENCES `user` (`id`)
+  FOREIGN KEY (`owner_id`) REFERENCES `user` (`id`),
+  INDEX `wait_room_status_live_id` (`wait_room_status`, `live_id`)
 );
 
 CREATE TABLE `room_member`(
