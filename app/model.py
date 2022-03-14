@@ -237,7 +237,7 @@ def _get_room_members_count_by_room_id(conn, room_id: int) -> int:
   return result.scalar()
 
 
-def get_rooms_by_live_id(live_id: int) -> list[RoomInfo]:
+def get_rooms(live_id: int) -> list[RoomInfo]:
   roomInfos = list[RoomInfo]()
   with engine.begin() as conn:
     rooms = _get_rooms_by_live_id(conn, live_id)
@@ -344,13 +344,15 @@ def _update_room_status(conn, room_id: int, status: WaitRoomStatus):
   )
 
 
-def start_room(user_id: int, room_id: int):
+def start_game(user_id: int, room_id: int):
   with engine.begin() as conn:
     room = _get_room_by_id(conn, room_id)
     if room is None:
       raise HTTPException(status_code=404)
     if room.owner_id != user_id:
       raise HTTPException(status_code=403, detail="you are not the owner")
+    if room.wait_room_status != WaitRoomStatus.Waiting:
+      raise HTTPException(status_code=400, detail="room is already started")
 
     _update_room_status(conn, room_id, WaitRoomStatus.LiveStart)
 
@@ -419,7 +421,7 @@ def _get_results_by_room_id(conn, room_id: int) -> list[ResultUser]:
   return members
 
 
-def get_results_by_room_id(room_id: int) -> list[ResultUser]:
+def get_results(room_id: int) -> list[ResultUser]:
   with engine.begin() as conn:
     room = _get_room_by_id(conn, room_id)
     if room is None:

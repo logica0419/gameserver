@@ -112,7 +112,7 @@ def room_list(req: RoomListRequest, token: str = Depends(get_auth_token)):
   if user is None:
     raise HTTPException(status_code=401)
 
-  room_info_list = model.get_rooms_by_live_id(req.live_id)
+  room_info_list = model.get_rooms(req.live_id)
   return RoomListResponse(room_info_list=room_info_list)
 
 
@@ -165,7 +165,7 @@ def room_start(req: RoomStartRequest, token: str = Depends(get_auth_token)):
   if user is None:
     raise HTTPException(status_code=401)
 
-  model.start_room(user.id, req.room_id)
+  model.start_game(user.id, req.room_id)
   return Empty()
 
 
@@ -199,5 +199,5 @@ def room_result(req: RoomResultRequest, token: str = Depends(get_auth_token)):
   if user is None:
     raise HTTPException(status_code=401)
 
-  resultList = model.get_results_by_room_id(req.room_id)
+  resultList = model.get_results(req.room_id)
   return RoomResultResponse(result_user_list=resultList)
