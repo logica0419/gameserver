@@ -415,7 +415,6 @@ def _get_results_by_room_id(conn, room_id: int) -> list[ResultUser]:
       text(
           "SELECT * FROM room_member "
           "WHERE room_id = :room_id "
-          "AND judge_count_list"
       ),
       {"room_id": room_id}
   )
@@ -424,7 +423,7 @@ def _get_results_by_room_id(conn, room_id: int) -> list[ResultUser]:
   for row in result:
     member = RoomMember.from_orm(row)
     if member.judge_count_list is None or member.score is None:
-      return None
+      return list[ResultUser]()
 
     judgeCountStrList = member.judge_count_list.split(",")
     judgeCountList = [int(s) for s in judgeCountStrList]
