@@ -90,7 +90,7 @@ def update_user(token: str, name: str, leader_card_id: int) -> None:
 
 MAX_USER_COUNT = 4
 MAX_RESULT_TIME = 10
-MAX_ROOM_OPEN_TIME = 400
+MAX_ROOM_OPEN_TIME = 200
 
 
 class LiveDifficulty(IntEnum):
