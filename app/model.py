@@ -415,7 +415,7 @@ def _get_results_by_room_id(conn, room_id: int) -> list[ResultUser]:
       text(
           "SELECT * FROM room_member "
           "WHERE room_id = :room_id "
-          "AND judge_count_list IS NOT NULL AND score IS NOT NULL"
+          "AND judge_count_list"
       ),
       {"room_id": room_id}
   )
