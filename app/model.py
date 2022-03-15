@@ -273,7 +273,7 @@ def _get_room_by_id(conn, room_id: int) -> Optional[Room]:
   return Room.from_orm(room)
 
 
-def _get_room_members_count_by_room_id_with_tx(conn, room_id: int) -> int:
+def _get_room_members_count_by_room_id_with_lock(conn, room_id: int) -> int:
   result = conn.execute(
       text(
           "SELECT COUNT(*) FROM room_member "
@@ -299,7 +299,7 @@ def add_member(
     if room.owner_id == member_id:
       return JoinRoomResult.OtherError
 
-    membersCount = _get_room_members_count_by_room_id_with_tx(conn, room_id)
+    membersCount = _get_room_members_count_by_room_id_with_lock(conn, room_id)
     if membersCount >= MAX_USER_COUNT:
       return JoinRoomResult.RoomFull
 
