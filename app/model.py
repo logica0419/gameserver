@@ -462,7 +462,7 @@ def _update_room_owner(conn, id: int, owner_id: int):
   conn.execute(
       text(
           "UPDATE room "
-          "SET owner_id = :owner_id"
+          "SET owner_id = :owner_id "
           "WHERE id = :id"
       ),
       {"id": id, "owner_id": owner_id}
