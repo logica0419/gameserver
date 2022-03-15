@@ -423,6 +423,9 @@ def _get_results_by_room_id(conn, room_id: int) -> list[ResultUser]:
   members = list[ResultUser]()
   for row in result:
     member = RoomMember.from_orm(row)
+    if member.judge_count_list is None or member.score is None:
+      return None
+
     judgeCountStrList = member.judge_count_list.split(",")
     judgeCountList = [int(s) for s in judgeCountStrList]
     members.append(ResultUser(
@@ -430,6 +433,7 @@ def _get_results_by_room_id(conn, room_id: int) -> list[ResultUser]:
         judge_count_list=judgeCountList,
         score=member.score
     ))
+
   return members
 
 
