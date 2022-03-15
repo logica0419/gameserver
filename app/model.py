@@ -360,6 +360,18 @@ def _update_room_status(conn, room_id: int, status: WaitRoomStatus):
   )
 
 
+def _update_null_result_to_zero(conn, room_id: int):
+  conn.execute(
+      text(
+          "UPDATE room_member "
+          "SET judge_count_list = '0,0,0,0,0', score = 0 "
+          "WHERE room_id = :room_id "
+          "AND judge_count_list IS NULL AND score IS NULL"
+      ),
+      {"room_id": room_id}
+  )
+
+
 class RoomDissolver(Thread):
   def __init__(self, room_id: int):
     self.room_id = room_id
@@ -427,18 +439,6 @@ def _update_result(
           "room_id": room_id,
           "member_id": user_id
       }
-  )
-
-
-def _update_null_result_to_zero(conn, room_id: int):
-  conn.execute(
-      text(
-          "UPDATE room_member "
-          "SET judge_count_list = '0,0,0,0,0', score = 0 "
-          "WHERE room_id = :room_id "
-          "AND judge_count_list IS NULL AND score IS NULL"
-      ),
-      {"room_id": room_id}
   )
 
 
