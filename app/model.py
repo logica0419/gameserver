@@ -286,8 +286,8 @@ def _get_room_members_count_by_room_id_with_lock(conn, room_id: int) -> int:
 
 
 def add_member(
-        room_id,
-        member_id,
+        room_id: int,
+        member_id: int,
         select_difficulty: LiveDifficulty
 ) -> JoinRoomResult:
   with engine.begin() as conn:
