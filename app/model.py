@@ -11,9 +11,6 @@ from threading import Thread
 from .db import engine
 
 
-RESULT_WAIT_TIME = 10
-
-
 class InvalidToken(Exception):
   """指定されたtokenが不正だったときに投げる"""
 
@@ -92,6 +89,8 @@ def update_user(token: str, name: str, leader_card_id: int) -> None:
 
 
 MAX_USER_COUNT = 4
+MAX_RESULT_TIME = 10
+MAX_ROOM_OPEN_TIME = 400
 
 
 class LiveDifficulty(IntEnum):
@@ -361,6 +360,20 @@ def _update_room_status(conn, room_id: int, status: WaitRoomStatus):
   )
 
 
+class RoomDissolver(Thread):
+  def __init__(self, room_id: int):
+    self.room_id = room_id
+    super().__init__()
+
+  def run(self):
+    print("starting RoomDissolver thread")
+    sleep(MAX_ROOM_OPEN_TIME)
+    with engine.begin() as conn:
+      _update_room_status(conn, self.room_id, WaitRoomStatus.Dissolution)
+      _update_null_result_to_zero(conn, self.room_id)
+    print("room dissolved")
+
+
 def start_game(user_id: int, room_id: int):
   with engine.begin() as conn:
     room = _get_room_by_id(conn, room_id)
@@ -372,6 +385,9 @@ def start_game(user_id: int, room_id: int):
       raise HTTPException(status_code=400, detail="room is already started")
 
     _update_room_status(conn, room_id, WaitRoomStatus.LiveStart)
+
+  updater = RoomDissolver(room_id=room_id)
+  updater.start()
 
 
 def _get_room_by_id_with_lock(conn, room_id: int) -> Optional[Room]:
@@ -414,7 +430,7 @@ def _update_result(
   )
 
 
-def update_null_result_to_zero(conn, room_id: int):
+def _update_null_result_to_zero(conn, room_id: int):
   conn.execute(
       text(
           "UPDATE room_member "
@@ -433,9 +449,9 @@ class ResultUpdater(Thread):
 
   def run(self):
     print("starting ResultUpdater thread")
-    sleep(RESULT_WAIT_TIME)
+    sleep(MAX_RESULT_TIME)
     with engine.begin() as conn:
-      update_null_result_to_zero(conn, self.room_id)
+      _update_null_result_to_zero(conn, self.room_id)
     print("null results updated")
 
 
