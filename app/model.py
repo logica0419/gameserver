@@ -5,8 +5,13 @@ from fastapi import HTTPException
 from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.exc import NoResultFound
+from time import sleep
+from threading import Thread
 
 from .db import engine
+
+
+RESULT_WAIT_TIME = 10
 
 
 class InvalidToken(Exception):
@@ -369,6 +374,22 @@ def start_game(user_id: int, room_id: int):
     _update_room_status(conn, room_id, WaitRoomStatus.LiveStart)
 
 
+def _get_room_by_id_with_lock(conn, room_id: int) -> Optional[Room]:
+  result = conn.execute(
+      text(
+          "SELECT * FROM room "
+          "WHERE id = :id "
+          "FOR UPDATE"
+      ),
+      {"id": room_id}
+  )
+  try:
+    room = result.one()
+  except NoResultFound:
+    return None
+  return Room.from_orm(room)
+
+
 def _update_result(
         conn,
         user_id: int,
@@ -393,6 +414,31 @@ def _update_result(
   )
 
 
+def update_null_result_to_zero(conn, room_id: int):
+  conn.execute(
+      text(
+          "UPDATE room_member "
+          "SET judge_count_list = '0,0,0,0,0', score = 0 "
+          "WHERE room_id = :room_id "
+          "AND judge_count_list IS NULL AND score IS NULL"
+      ),
+      {"room_id": room_id}
+  )
+
+
+class ResultUpdater(Thread):
+  def __init__(self, room_id: int):
+    self.room_id = room_id
+    super().__init__()
+
+  def run(self):
+    print("starting ResultUpdater thread")
+    sleep(RESULT_WAIT_TIME)
+    with engine.begin() as conn:
+      update_null_result_to_zero(conn, self.room_id)
+    print("null results updated")
+
+
 def finish_game(
     user_id: int,
     room_id: int,
@@ -400,7 +446,7 @@ def finish_game(
     score: int
 ):
   with engine.begin() as conn:
-    room = _get_room_by_id(conn, room_id)
+    room = _get_room_by_id_with_lock(conn, room_id)
     if room is None:
       raise HTTPException(status_code=404)
     if room.wait_room_status == WaitRoomStatus.Waiting:
@@ -408,6 +454,10 @@ def finish_game(
 
     _update_room_status(conn, room_id, WaitRoomStatus.Dissolution)
     _update_result(conn, user_id, room_id, judge_count_list, score)
+
+  if room.wait_room_status == WaitRoomStatus.LiveStart:
+    updater = ResultUpdater(room_id=room_id)
+    updater.start()
 
 
 def _get_results_by_room_id(conn, room_id: int) -> list[ResultUser]:
